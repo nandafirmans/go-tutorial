@@ -114,3 +114,49 @@ func TestHelloWorldAfif(t *testing.T) {
 
 	fmt.Println("TestHelloWorldAfif Done")
 }
+
+func BenchmarkHelloWorld(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		HelloWorld("Nanda")
+	}
+}
+
+func BenchmarkSubHelloWorld(b *testing.B) {
+	b.Run("Nanda", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			HelloWorld("Nanda")
+		}
+	})
+
+	b.Run("Afif", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			HelloWorld("Afif")
+		}
+	})
+}
+
+func BenchmarkTableHelloWorld(b *testing.B) {
+	benchmarks := []struct{ name, request string }{
+		{
+			name:    "Nanda",
+			request: "Nanda",
+		},
+		{
+			name:    "Afif",
+			request: "Afif",
+		},
+		{
+			name:    "Muhammad",
+			request: "Muhammad",
+		},
+	}
+
+	for _, benchmark := range benchmarks {
+		b.Run(benchmark.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				HelloWorld(benchmark.request)
+			}
+		})
+	}
+
+}
