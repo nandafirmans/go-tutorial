@@ -9,17 +9,17 @@ func TestHelloWorldNanda(t *testing.T) {
 	result := HelloWorld("Nanda")
 
 	if result != "Hello Nanda" {
-		t.Fail()
+		t.Error("result should be Hello Nanda")
 	}
 
 	fmt.Println("TestHelloWorldNanda Done")
 }
 
 func TestHelloWorldAfif(t *testing.T) {
-	result := HelloWorld("Afif 1")
+	result := HelloWorld("Afif")
 
 	if result != "Hello Afif" {
-		t.FailNow()
+		t.Fatal("result should be Hello Afif")
 	}
 
 	fmt.Println("TestHelloWorldAfif Done")
