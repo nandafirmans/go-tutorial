@@ -2,6 +2,7 @@ package goroutine
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -76,7 +77,7 @@ func TestInOutChannel(t *testing.T) {
 func TestBufferedChannel(t *testing.T) {
 	// argumen kedua adalah jumlah buffer (buffer capacity) yang tersedia pada channel.
 	// buffered channel ini sangat cocok untuk case yg apabila goroutine penerima lebih lambat-
-	// dari pada si pengirim. (jadi akan data yg dikirim/diterima akan diantrikan sesuai jumlah buffernya).
+	// dari pada si pengirim. (jadi data yg dikirim/diterima akan diantrikan sesuai jumlah buffernya).
 	channel := make(chan string, 3)
 	defer close(channel)
 
@@ -104,4 +105,57 @@ func TestBufferedChannel(t *testing.T) {
 
 	fmt.Println("Done Executing Buffered Channel")
 	time.Sleep(2 * time.Second)
+}
+
+func TestRangeChannel(t *testing.T) {
+	channel := make(chan string)
+
+	go func() {
+		for i := 1; i <= 10; i++ {
+			channel <- "Perulangan ke " + strconv.Itoa(i)
+		}
+		close(channel)
+	}()
+
+	for data := range channel {
+		fmt.Println(data)
+	}
+
+	fmt.Println("Done Executing TestRangeChannel")
+}
+
+func TestSelectChannel(t *testing.T) {
+	channel1 := make(chan string)
+	channel2 := make(chan string)
+	defer close(channel1)
+	defer close(channel2)
+
+	go GiveMeResponse(channel1)
+	go GiveMeResponse(channel2)
+
+	counter := 0
+
+	for {
+		select {
+		case data := <-channel1:
+			fmt.Println("Channel 1", data)
+			counter++
+
+		case data := <-channel2:
+			fmt.Println("Channel 2", data)
+			counter++
+
+		// kalau tidak ada default select maka-
+		// akan terjadi deadlock error karena data-
+		// diambil tapi belum ada yg dikirim.
+		// jadi akan terus looping tanpa harus deadlock sampai kedua datanya diterima
+		default:
+			fmt.Println("Menuggu Data")
+		}
+
+		if counter == 2 {
+			break
+		}
+	}
+
 }
