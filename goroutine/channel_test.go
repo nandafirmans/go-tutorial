@@ -72,3 +72,36 @@ func TestInOutChannel(t *testing.T) {
 
 	time.Sleep(3 * time.Second)
 }
+
+func TestBufferedChannel(t *testing.T) {
+	// argumen kedua adalah jumlah buffer (buffer capacity) yang tersedia pada channel.
+	// buffered channel ini sangat cocok untuk case yg apabila goroutine penerima lebih lambat-
+	// dari pada si pengirim. (jadi akan data yg dikirim/diterima akan diantrikan sesuai jumlah buffernya).
+	channel := make(chan string, 3)
+	defer close(channel)
+
+	go func() {
+		// ketika channel memiliki buffer maka tidak akan terjadi blocking-
+		// saat kita mengirim value pada channel walaupun tidak ada yg menerima value channel-nya
+		channel <- "Nanda"
+		channel <- "Firmansyah"
+		channel <- "Afif"
+	}()
+
+	go func() {
+		// begitu juga saat menerima data, di channel tidak akan terjadi deadlock walaupun-
+		// tidak ada data yang dikirim. tapi ini tergantung kapasitas buffer-
+		// apabila kapasitas buffer 3 namun kita menerima data ke 4 dan posisinya tidak ada data yg dikirim-
+		// kedalam channel maka akan terjadi deadlock saat mengambil data ke 4
+		fmt.Println(<-channel)
+		fmt.Println(<-channel)
+		fmt.Println(<-channel)
+
+		// code dibawah akan menyebabkan deadlock karena data yg dikirim hanya 3 sedangkan kita
+		// coba menerima data ke 4
+		// fmt.Println(<-channel)
+	}()
+
+	fmt.Println("Done Executing Buffered Channel")
+	time.Sleep(2 * time.Second)
+}
