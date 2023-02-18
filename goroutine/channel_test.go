@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// channel digunakan untuk sharing data antara goroutine
+// dan juga digunakan untuk get value dari goroutine
+
 func TestChannel(t *testing.T) {
 	channel := make(chan string)
 	defer close(channel)
