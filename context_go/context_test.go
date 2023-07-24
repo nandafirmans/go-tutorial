@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 	"testing"
+	"time"
 )
 
 // Context merupakan sebuah data yang membawa value, sinyal cancel, sinyal timeout dan sinyal deadline
@@ -56,6 +57,7 @@ func TestContextWithValue(t *testing.T) {
 
 func CreateCounter() chan int {
 	// fungsi ini akan mengirim data terus2an dan menyebabkan goroutine leak
+	// go routine leak adalah go routine yang jalan terus menerus
 	destination := make(chan int)
 
 	go func() {
@@ -70,17 +72,48 @@ func CreateCounter() chan int {
 	return destination
 }
 
-func TestContextWithCancel(t *testing.T) {
-	fmt.Println(runtime.NumGoroutine())
+func CreateCounterWithContext(ctx context.Context) chan int {
+	destination := make(chan int)
 
-	destination := CreateCounter()
+	go func() {
+		defer close(destination)
+		counter := 1
+		for {
+			select {
+			case <-ctx.Done():
+				// return ini akan menghentikan goroutine
+				return
+			default:
+				destination <- counter
+				counter++
+			}
+		}
+	}()
+
+	return destination
+}
+
+func TestContextWithCancel(t *testing.T) {
+	fmt.Println("Initial Total Goroutine", runtime.NumGoroutine())
+
+	parentCtx := context.Background()
+	ctx, cancel := context.WithCancel(parentCtx)
+
+	// destination := CreateCounter()
+	destination := CreateCounterWithContext(ctx)
+
+	fmt.Println("Total Goroutine", runtime.NumGoroutine())
+
 	for n := range destination {
 		fmt.Println("Counter", n)
-
 		if n == 10 {
 			break
 		}
 	}
+	cancel()
 
-	fmt.Println(runtime.NumGoroutine())
+	time.Sleep(time.Millisecond * 100)
+
+	// harapannya tidak ada go routine yang jalan lagi disini
+	fmt.Println("Final Total Goroutine", runtime.NumGoroutine())
 }
