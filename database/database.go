@@ -6,7 +6,7 @@ import (
 )
 
 func GetConnection() *sql.DB {
-	db, err := sql.Open("mysql", "nandafirmans:1722@tcp(localhost:3306)/go_test")
+	db, err := sql.Open("mysql", "nandafirmans:1722@tcp(localhost:3306)/go_test?parseTime=true")
 
 	if err != nil {
 		panic(err)
