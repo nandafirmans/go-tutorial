@@ -227,3 +227,46 @@ func TestPrepareStatement(t *testing.T) {
 		fmt.Println("Success insert data with id:", insertId)
 	}
 }
+
+func TestTransaction(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	// NOTE: db.Begin digunakan untuk membuat database transaction.
+	// Database transaction digunakan untuk mengatur proses query yang terjadi secara bersamaan.
+	// Dengan database transaction, kita bisa memastikan bahwa semua proses query berhasil dilakukan.
+	// Jika salah satu proses query gagal, maka semua proses query akan di rollback.
+	// Jika semua proses query berhasil, maka semua proses query akan di commit.
+	// Dengan begin transaction, kita bisa memastikan bahwa semua proses query berhasil dilakukan.
+	tx, err := db.Begin()
+	if err != nil {
+		panic(err)
+	}
+
+	script := "INSERT INTO comments(email, comment) VALUES(?, ?)"
+
+	for i := 0; i < 10; i++ {
+		email := "nanda" + strconv.Itoa(i) + "@email.com"
+		comment := "Ini adalah komentar ke-" + strconv.Itoa(i)
+
+		result, err := tx.ExecContext(ctx, script, email, comment)
+
+		if err != nil {
+			panic(err)
+		}
+
+		insertId, err := result.LastInsertId()
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Success insert data with id:", insertId)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		panic(err)
+	}
+}
