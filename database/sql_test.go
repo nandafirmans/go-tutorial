@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -161,4 +162,68 @@ func TestExecSqlParameter(t *testing.T) {
 	}
 
 	fmt.Println("Success insert data")
+}
+
+func TestAutoIncrement(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	email := "nanda@email.com"
+	comment := "Lorem ipsum dolor sit amet"
+
+	script := "INSERT INTO comments(email, comment) VALUES(?, ?)"
+	result, err := db.ExecContext(ctx, script, email, comment)
+
+	if err != nil {
+		panic(err)
+	}
+
+	insertId, err := result.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Success insert data with id:", insertId)
+}
+
+func TestPrepareStatement(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	script := "INSERT INTO comments(email, comment) VALUES(?, ?)"
+
+	// NOTE: PrepareContext digunakan untuk membuat prepared statement.
+	// Prepared statement adalah fitur untuk membuat template query yang bisa digunakan berulang-ulang.
+	// Dengan prepared statement koneksi ke database hanya dibuat sekali saja.
+	// Jadi, ketika ingin melakukan query, kita hanya perlu mengirimkan parameter saja.
+	// Hal ini akan membuat performa aplikasi kita menjadi lebih cepat.
+	statement, err := db.PrepareContext(ctx, script)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer statement.Close()
+
+	for i := 0; i < 10; i++ {
+		email := "nanda" + strconv.Itoa(i) + "@email.com"
+		comment := "Ini adalah komentar ke-" + strconv.Itoa(i)
+
+		result, err := statement.ExecContext(ctx, email, comment)
+
+		if err != nil {
+			panic(err)
+		}
+
+		insertId, err := result.LastInsertId()
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Success insert data with id:", insertId)
+	}
 }
