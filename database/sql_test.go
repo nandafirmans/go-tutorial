@@ -36,7 +36,7 @@ func TestQueryContext(t *testing.T) {
 	script := "SELECT id, name FROM customer"
 
 	// NOTE: QueryContext digunakan untuk eksekusi query yang mengembalikan data, seperti SELECT.
-	// NOTE: rows disini bentuknya adalah pointer jadi hanya bisa Next() terus untuk melakukan iterasi data hasil query.
+	// rows disini bentuknya adalah pointer jadi hanya bisa Next() terus untuk melakukan iterasi data hasil query.
 	rows, err := db.QueryContext(ctx, script)
 
 	if err != nil {
@@ -105,4 +105,60 @@ func TestQueryContext2(t *testing.T) {
 	}
 
 	fmt.Println("Success get data")
+}
+
+func TestSqlInjection(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	// NOTE: contoh sql injection
+	// username := "admin'; #"
+	// password := "admin1"
+	// script := "SELECT username FROM user WHERE username = '" + username + "' AND password = '" + password + "' LIMIT 1"
+	// rows, err := db.QueryContext(ctx, script)
+
+	// NOTE: cara menghindari sql injection, yaitu menggunakan parameter query.
+	username := "admin"
+	password := "admin"
+	script := "SELECT username FROM user WHERE username = ? AND password = ? LIMIT 1"
+	rows, err := db.QueryContext(ctx, script, username, password)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	if rows.Next() {
+		var username string
+		err := rows.Scan(&username)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Success login with username:", username)
+	} else {
+		fmt.Println("Failed login")
+	}
+}
+
+func TestExecSqlParameter(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	username := "adoding"
+	password := "alalaadoding"
+
+	script := "INSERT INTO user(username, password) VALUES(?, ?)"
+
+	_, err := db.ExecContext(ctx, script, username, password)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Success insert data")
 }
