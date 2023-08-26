@@ -25,23 +25,40 @@ func TestHandler(t *testing.T) {
 }
 
 func TestHandlerServeMux(t *testing.T) {
-	handler := http.NewServeMux()
+	serveMux := http.NewServeMux()
 
-	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Hello World")
 	})
 
-	handler.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>Hi</h1>")
 	})
 
-	handler.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>Images</h1>")
 	})
 
-	handler.HandleFunc("/images/thumbnails/", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc("/images/thumbnails/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>Images Thumbnails</h1>")
 	})
+
+	server := http.Server{
+		Addr:    "localhost:3001",
+		Handler: serveMux,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestRequest(t *testing.T) {
+	var handler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, r.Method)
+		fmt.Fprint(w, r.URL.Path)
+	}
 
 	server := http.Server{
 		Addr:    "localhost:3001",
