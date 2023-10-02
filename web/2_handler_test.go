@@ -25,6 +25,8 @@ func TestHandler(t *testing.T) {
 }
 
 func TestHandlerServeMux(t *testing.T) {
+	// NOTE: ServeMux dapat digunakan untuk menangani request berdasarkan path (routing management)
+
 	serveMux := http.NewServeMux()
 
 	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
