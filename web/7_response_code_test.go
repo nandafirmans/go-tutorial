@@ -20,8 +20,22 @@ func ResponseCode(writter http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func TestResponseCode(t *testing.T) {
+func TestResponseCodeInvalid(t *testing.T) {
 	request := httptest.NewRequest("GET", "http://localhost/", nil)
+	recorder := httptest.NewRecorder()
+
+	ResponseCode(recorder, request)
+
+	response := recorder.Result()
+	body, _ := io.ReadAll(recorder.Body)
+
+	fmt.Println(response.StatusCode)
+	fmt.Println(response.Status)
+	fmt.Println(string(body))
+}
+
+func TestResponseCodeSuccess(t *testing.T) {
+	request := httptest.NewRequest("GET", "http://localhost/?name=Afif", nil)
 	recorder := httptest.NewRecorder()
 
 	ResponseCode(recorder, request)
