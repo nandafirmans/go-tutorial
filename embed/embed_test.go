@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -20,7 +20,7 @@ func TestEmbedString(t *testing.T) {
 var catImage []byte
 
 func TestEmbedByte(t *testing.T) {
-	err := ioutil.WriteFile("cat_copy.png", catImage, fs.ModePerm)
+	err := os.WriteFile("cat_copy.png", catImage, fs.ModePerm)
 	if err != nil {
 		panic(err)
 	}
